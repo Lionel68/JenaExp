@@ -51,3 +51,55 @@ all<-data.frame(S=fd$nbsp,FRic=fd$FRic,FDiv=fd$FDiv,FDis=fd$FDis,FEve=fd$FEve,a_
 #next step would be to have only two traits
 #and to generate illustration on how varying abundances, traits distribution affect
 #the FD indices, one aim for this would be to have then a Shiny App
+
+#generate two traits for 5 species
+traits<-data.frame(Size=rlnorm(5,1,1),Mass=rnorm(5,10,1))
+traits<-apply(traits,2,scale)
+rownames(traits)<-paste0("Sp",1:5)
+#generate community abundance data (only for one site)
+abd<-matrix(rpois(5,3),ncol=5,nrow=1)
+colnames(abd)<-paste0("Sp",1:5)
+#compute the FDs
+fd<-dbFD(traits,abd)
+#compute a_MST
+fd$a_mst<-a_mst(traits,abd)
+#compute the weighted centroids in trait space
+p<-abd/sum(abd)
+ck<-apply(traits,2,function(x) sum(p*x))
+
+#plot FDis
+plot(Mass~Size,traits,pch=16,cex=15*(abd/sum(abd)),main=paste("FDis:",round(fd$FDis,2),sep=" "))
+points(ck[1],ck[2],pch=13,cex=2,col="red")
+apply(traits,1,function(x) lines(c(ck[1],x[1]),c(ck[2],x[2])))
+
+#plot FRic
+chv<-t(convhulln(traits))
+poly<-cbind(traits[chv,1],traits[chv,2])
+poly<-poly[!duplicated(poly),]
+plot(Mass~Size,traits,pch=16,cex=15*(abd/sum(abd)),main=paste("FRic:",round(fd$FRic,2),sep=" "))
+polygon(poly[,1],poly[,2])
+
+#plot FDiv
+edge<-traits[traits[,1]%in%poly[,1] & traits[,2]%in%poly[,2],]
+g<-apply(edge,2,function(x) sum(x)/length(x))
+#average square rooted distance from each species to this centroid
+dg<-sqrt(rowSums((traits-g)**2))
+dg_avg<-sum(dg)/dim(traits)[1]
+#abundance weighted difference for each species from this average centroids
+d<-sum((dg-dg_avg)*p)
+d_abs<-sum(abs(dg-dg_avg)*p)
+lims<-c(g[1]-dg_avg-0.5,g[1]+dg_avg+0.5,g[2]-dg_avg-0.5,g[2]+dg_avg+0.5)
+plot(Mass~Size,traits,pch=16,cex=15*(abd/sum(abd)),main=paste("FDiv:",round(fd$FDiv,2),sep=" "),xlim=c(lims[1],lims[2]),ylim=c(lims[3],lims[4]))
+#average distance from centroids
+draw.circle(g[1],g[2],radius=dg_avg,lwd = 3)
+#centroids
+points(g[1],g[2],pch=13,col="red",cex=2)
+#distance between each species and the average distance
+#still not resolved ....
+
+#FEve
+mst<-spantree(gowdis(traits))
+p<-plot(mst,main=paste("FEve:",round(fd$FEve,2),sep=" "))
+points(p$sites[,1],p$sites[,2],pch=16,cex=15*(abd/sum(abd)))
+
+
