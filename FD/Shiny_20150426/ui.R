@@ -9,8 +9,8 @@ shinyUI(fluidPage(
     mainPanel(
       plotOutput("Plot1"),
       plotOutput("Plot2"),
-      plotOutput("Plot3"),
-      plotOutput("Plot4")
+      plotOutput("Plot3")
+      
     )
   )
 ))
