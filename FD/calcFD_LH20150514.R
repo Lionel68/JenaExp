@@ -1,6 +1,6 @@
 ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### 
 # FD calculations used in Wagg et al. manuscript in prep. for analysis of traits and biodiversity effects in the Jena TBE data from 2012
-#modified by Lionel Hertzog on 14.05.2015 to include non-numeric trait data
+#modified by Lionel Hertzog on 14.05.2015 to include non-numeric trait data and FD index computation
 # Literature: 
 #  Clark, C.M., Flynn, D.F.B., Butterfield, B.J. & Reich, P.B. (2012). Testing the link between functional diversity and ecosystem functioning in a Minnesota grassland experiment. PLoS ONE 7(12): e52821. doi:10.1371/journal.pone.0052821
 # Laliberté, E. and P. Legendre (2010) A distance-based framework for measuring functional diversity from multiple traits. Ecology 91:299-305.
@@ -28,6 +28,8 @@
 
 # standardize = standardize method for trait values (standardize columns in trait_table?). Should be either "None" for no standardization or one of the methods in function decostand() in the package vegan
 
+# clac.FXxx = should the function return one or several of the FD index computed by the function dbFD in the FD package. Note if calc.FDiv=TRUE, calc.FRic must also be TRUE
+
 # Note branch lengths can be better manipulated (ie for standarization etc...) . see https://github.com/ibartomeus/fundiv/blob/master/R/Xtree.R
 
 ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### 
@@ -36,12 +38,12 @@
 ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### 
 ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### 
 
-calc.FD<-function(species_matrix,trait_table,weighted=FALSE,distance = "euclidean",standardize = "None") {
-
+calc.FD <- function(species_matrix,trait_table,weighted=FALSE,distance = "euclidean",standardize = "None",calc.FRic=FALSE,calc.FDiv=FALSE,calc.FEve=FALSE,calc.FDis=FALSE,corr="sqrt") {
+  require(FD)
 # # # # # # # Generate trait distance matrix # # # # # # # # #
   #apply standardization if asked for
   if(standardize!="None"){
-    trait_table<-decostand(trait_table, method=standardize)
+    trait_table <- decostand(trait_table, method=standardize)
   }
   #if all traits variables are numeric compute the euclidean distance
   if(all(apply(trait_table,2,is.numeric))){
@@ -54,8 +56,10 @@ calc.FD<-function(species_matrix,trait_table,weighted=FALSE,distance = "euclidea
   
 
 # # # # # # # Make species matrix binary if distances are to be unweighted # # # # # # # # #
-	if (weighted == FALSE)
-		species_matrix[species_matrix>0] <- 1
+	if (!weighted){
+	  species_matrix[species_matrix>0] <- 1
+	}
+		
 
 # set up NMDS distance matrix
 	mds <- metaMDS(D, k=2,)
@@ -68,14 +72,43 @@ calc.FD<-function(species_matrix,trait_table,weighted=FALSE,distance = "euclidea
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # Go through each sampled sites and compute FD and FDmpd
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
- output<-apply(species_matrix,1,function(x) helper_fun(x))
- return(as.data.frame(t(output)))
+ output <- apply(species_matrix,1,function(x) helper_fun(x))
+ output <- as.data.frame(t(output))
+
+
+####################
+#if asked for compute other FD index from the dbFD function
+##########
+
+ if(calc.FRic | calc.FDiv | calc.FEve | calc.FDis){
+   #for large number of species can take a long time to run or even crash....
+  fds<-dbFD(x = trait_table,a = species_matrix,w.abun = weighted,calc.FRic = calc.FRic,calc.FDiv = calc.FDiv,corr=corr)
+  output$Rich<-fds$nbsp
+  
+  if(calc.FDis){
+    output$FDis<-fds$FDis
+  }
+  if(calc.FEve){
+    output$FEve<-fds$FEve
+  }    
+  if(calc.FRic){
+    output$FRic<-fds$FRic
+  }
+  if(calc.FDiv){
+    output$FDiv<-fds$FDiv
+  }
+ }
+
+ return(output)
 }
 
+
+#this is an helper function to use in the apply context to go through all sites
 helper_fun<-function(site){
   #remove non present species
   site<-site[site!=0 & !is.na(site)]
-  if(sum(site,na.rm=TRUE)<=1){
+  #if monoculture or no species in sites return 0
+  if(length(site)==1){
     return(c(FD=0,FDmpd=0))
   }
   else{
@@ -85,14 +118,18 @@ helper_fun<-function(site){
     d_mds<-MDSdist[names(ps),names(ps)]*smat 
     FDmpd<-mean(as.numeric(d_mds[lower.tri(d_mds)]))
     #compute FD
-    Dsub<-dist(trait_table[rownames(trait_table)%in%names(ps),])
+    trait_sub<-trait_table[rownames(trait_table)%in%names(ps),]
+    #if all traits are numeric use euclidian distance
+    if(all(apply(trait_sub,2,is.numeric))){
+      Dsub<-dist(trait_sub)
+    }
+    #otherwise use Gower distance
+    else{
+      Dsub<-gowdis(trait_sub)
+    }    
     clust<-hclust(Dsub,method="complete")
     FD<- treedive(t(as.matrix(site)), clust, match.force=FALSE)
-    #return
+    
     return(c(FD=FD,FDmpd=FDmpd))
   }
 }
-
-
-species_matrix<-matrix(floor(rlnorm(500,1,1)),ncol=100,nrow=50,dimnames=list(paste0("Site",1:50),paste0("Species",1:100)))
-trait_table<-data.frame(T1=rnorm(100,0,2),T2=runif(100,-2,2),T3=factor(sample(c("A","B","C","D"),100,replace=TRUE)),row.names=paste0("Species",1:100))
