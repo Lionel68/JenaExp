@@ -72,7 +72,7 @@ calc.FD <- function(species_matrix,trait_table,weighted=FALSE,distance = "euclid
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # Go through each sampled sites and compute FD and FDmpd
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
- output <- apply(species_matrix,1,function(x) helper_fun(x))
+ output <- apply(species_matrix,1,function(x) helper_fun(x,MDSdist,trait_table))
  output <- as.data.frame(t(output))
 
 
@@ -104,7 +104,7 @@ calc.FD <- function(species_matrix,trait_table,weighted=FALSE,distance = "euclid
 
 
 #this is an helper function to use in the apply context to go through all sites
-helper_fun<-function(site){
+helper_fun<-function(site,MDSdist,trait_table){
   #remove non present species
   site<-site[site!=0 & !is.na(site)]
   #if monoculture or no species in sites return 0

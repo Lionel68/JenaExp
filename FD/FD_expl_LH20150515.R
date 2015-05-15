@@ -12,18 +12,8 @@ library(FD)
 library(psych)
 
 #load the function
-source_github <- function(u) {
-  # load package
-  require(RCurl)
-  
-  # read script lines from website
-  script <- getURL(u, ssl.verifypeer = FALSE)
-  
-  # parase lines and evealuate in the global environement
-  eval(parse(text = script))
-}
-source("https://github.com/Lionel68/JenaExp/blob/master/FD/calcFD_LH20150514.R")
-
+setwd("/home/lionel/Documents/PhD/git_folder/FD") #include here your path to the calcFD.R file
+source("calcFD_LH20150514.R")
 
 ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### ###### 
 ## GENERATE EXAMPLE DATA
@@ -70,7 +60,7 @@ for (i in 1:dim(sp.mat)[1]){
 traits = data.frame(Trt1=rnorm(length(sp),10,3),Trt2=runif(length(sp),0,10),Trt3=sample(c("A","B","C","D"),length(sp),replace=TRUE),Trt4=factor(sample(1:4,length(sp),replace=TRUE),ordered = TRUE),row.names=sp)
 
 # check for negative values and change them to positive proportions
-traits[traits< 0] = -1*traits[traits< 0] / 10
+#traits[traits< 0] = -1*traits[traits< 0] / 10
 
 # remove row names
 #rownames(sp.mat) = as.character(1:dim(sp.mat)[1]) (?)
