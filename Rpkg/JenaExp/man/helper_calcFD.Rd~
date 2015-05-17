@@ -1,0 +1,15 @@
+\name{helper_calcFD}
+\alias{helper_calcFD}
+\title{An helper function}
+\usage{}
+\arguments{}
+\value{}
+\description{}
+\author{Lionel Hertzog}
+\examples{
+library(FD)
+comm <- data(BCI)
+traits<- data.frame(T1=rnorm(dim(BCI)[2],10,2),T2=runif(dim(BCI)[2],0,10))
+fd_exp <- calcFD(comm,traits,weighted=TRUE)
+}
+\keyword{FD}
