@@ -1,8 +1,0 @@
-importFrom("FD",dbFD)
-importFrom("FD",gowdis)
-importFrom("vegan",decostand)
-importFrom("vegan",vegdist)
-importFrom("vegan",treedive)
-
-export(calc.FD)
-
