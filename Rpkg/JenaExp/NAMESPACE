@@ -5,4 +5,4 @@ importFrom("vegan",vegdist)
 importFrom("vegan",treedive)
 
 export(calcFD)
-export(helper_calcFD)
+
