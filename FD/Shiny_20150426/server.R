@@ -43,6 +43,20 @@ a_mst<-function(traits,comm){
   return(list(coeff=a,dat=dat))
 }
 
+#the function to compute the FDmpd
+fdmpd<-function(traits,comm){
+  
+  D <- dist(traits)
+  mds <- metaMDS(D, k=2)
+  MDSdist <- as.matrix(vegdist(mds$points, method="euclidean"))   
+  ps<-comm/sum(comm)
+  #compute FDmpd
+  smat<-1-as.matrix(dist(t(ps),method="manhattan"))
+  d_mds<-MDSdist*smat 
+  FDmpd<-mean(as.numeric(d_mds[lower.tri(d_mds)]))    
+  return(list(FDmpd=FDmpd,MDSpts=mds$points))
+}
+
 #from users input compute FD index 
 shinyServer(function(input,output){
   r_comm<-reactive({   
@@ -55,6 +69,8 @@ shinyServer(function(input,output){
   r_fd<-reactive({
     fd<-dbFD(r_traits(),r_comm(),stand.x=TRUE)
   })
+
+  
  
   output$Plot1<-renderPlot({
     #the trait data
@@ -70,16 +86,7 @@ shinyServer(function(input,output){
     #the vertices from the convex hull
     hpts <- chull(x = dat[,1], y = dat[,2])
     edge<-dat[hpts,]
-    #the centroid based only on the vertices position
-    g<-apply(edge,2,function(x) sum(x)/length(x))
-    #average square rooted distance from each species to this centroid
-    dg<-sqrt(rowSums((dat-g)**2))
-    dg_avg<-sum(dg)/dim(dat)[1]
-    #abundance weighted difference for each species from this average centroids
-    d<-sum((dg-dg_avg)*ps)
-    d_abs<-sum(abs(dg-dg_avg)*ps)
-    #the minimum spanning tree for FEve
-    mst<-spantree(gowdis(dat))
+
     
     par(mfrow=c(1,2))
     #FDis
@@ -133,10 +140,18 @@ shinyServer(function(input,output){
     names(dat)<-c("T1","T2")
     dat<-apply(dat,2,scale)
     com<-r_comm()
+    mds<-fdmpd(dat,com)
+    ps<-com/sum(com)
     #compute the slope of the cumulative distance
+    n<-dim(mds$MDSpts)[1]
     a<-a_mst(dat,com)
+    par(mfrow=c(1,2))
     plot(log(l)~log(Rank),a$dat,xlab="Rank of the branches (log)",ylab="Cumulative branch length (log)",main=paste("Slope of MST = ",round(a$coeff,2),sep=""),pch=16)
     
+    plot(mds$MDSpts[,1],mds$MDSpts[,2],xlab="First MDS axis",ylab="Second MDS axis",main=paste0("FDmpd = ",round(mds$FDmpd,3)),pch=16,cex=15*ps)
+    for(i in 1:(n-1)){
+      segments(mds$MDSpts[i,1],mds$MDSpts[i,2],mds$MDSpts[(i+1):n,1],mds$MDSpts[(i+1):n,2])
+    }
   })
   
   
