@@ -5,7 +5,7 @@ Version: 0.1
 Date: 2015-05-16
 Author: Lionel Hertzog, Cameron Wagg
 Maintainer: Lionel Hertzog <l.hertzog@tum.de>
-Description: This packages makes it very easy to square things
+Description: A package helping in the simulation and analysis of BEF-type data.
 Depends: FD, vegan
 License: GPL-3
 LazyLoad: yes
