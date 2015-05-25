@@ -6,3 +6,4 @@ importFrom("vegan",treedive)
 
 export(calcFD)
 export(sim_BEF)
+export(sim_traits)

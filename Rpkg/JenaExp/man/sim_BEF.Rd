@@ -19,5 +19,7 @@ sim_BEF()
 sim_BEF(n_species=20,n_rep=4,gradient=c(1,2,4,8,16))
 #with varying number of replicates per species richness level
 sim_BEF(n_species=20,n_rep=c(20,rep(5,4),4),gradient=c(1,2,4,8,16,20)
+#simulate the Jena Experiment
+jena<-sim_BEF(n_species=60,n_rep=c(16,16,16,16,14,4),gradient=c(1,2,4,8,16,60))
 }
 \keyword{simulation,BEF,design}
