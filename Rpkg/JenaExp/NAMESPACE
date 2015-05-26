@@ -1,0 +1,9 @@
+importFrom("FD",dbFD)
+importFrom("FD",gowdis)
+importFrom("vegan",decostand)
+importFrom("vegan",vegdist)
+importFrom("vegan",treedive)
+
+export(calcFD)
+export(sim_BEF)
+export(sim_traits)
