@@ -10,10 +10,6 @@
 ###################################################################
 ### Univariate, negative binomial functions (Figs. 1 and 2A-C)
 EstPvalue = function(y, x, add = 0,transformation) {
-  require(MASS)
-  print(cbind(x,y)) #for debugging purposes
-
-  
   if (transformation == "negbin") {
     try({
       z<-glm.nb(y ~ x, control = glm.control(maxit = 30))
@@ -124,8 +120,8 @@ compute.stats <- function(NRep = 50, b1.range = 0, n.range = 100, dispersion.ran
 
 # Function to simulate and fit data for the univariate negative binomial model
 compute.statsGLMM <- function(NRep = 50, b1.range = 0, n.range = 100, sd.eps.range = 1, b0.range = log(1), alpha = 0.05,seed=20150723) {
-  val<-expand.grid(b1=b1.range,n=n.range,disper=dispersion.range,b0=b0.range,sd.eps=sd.eps.range)
-  tmp<-mapply(function(b1,n,disper,b0,sd.eps){
+  val<-expand.grid(b1=b1.range,n=n.range,b0=b0.range,sd.eps=sd.eps.range)
+  tmp<-mapply(function(b1,n,b0,sd.eps){
     set.seed(seed)
     x <- runif(n,-2,2)
     eps<-rnorm(n,0,sd.eps)
@@ -135,11 +131,10 @@ compute.statsGLMM <- function(NRep = 50, b1.range = 0, n.range = 100, sd.eps.ran
     g <- GetAnalyses(Data, alpha,b1,GLMM=TRUE)
     g$b1<-b1
     g$n<-n
-    g$disper<-disper
     g$b0<-b0
     g$sd.eps<-sd.eps
     return(g)
-  },b1=val$b1,b0=val$b0,n=val$n,disper=val$disper,sd.eps=val$sd.eps,SIMPLIFY=FALSE)
+  },b1=val$b1,b0=val$b0,n=val$n,sd.eps=val$sd.eps,SIMPLIFY=FALSE)
   output<-rbind.fill(tmp)
   return(output)
 }
