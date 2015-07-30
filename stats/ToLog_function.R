@@ -20,7 +20,7 @@ EstPvalue = function(y, x, add = 0,transformation) {
       }
       else{
         val <- NA
-        pred <- NA
+        pred <- rep(NA,20)
       }
      })    
   }
@@ -33,7 +33,7 @@ EstPvalue = function(y, x, add = 0,transformation) {
     }
     else{
       val<-NA
-      pred<-NA
+      pred<-rep(NA,20)
     }
   }
   if (transformation == "glmm") {
@@ -45,7 +45,7 @@ EstPvalue = function(y, x, add = 0,transformation) {
         pred<-predict(z,type="response",newdata=new_x,re.form = ~0)
       } else {
         val <- NA
-        pred <- NA
+        pred <- rep(NA,20)
       }
     })    
   }
@@ -59,7 +59,7 @@ EstPvalue = function(y, x, add = 0,transformation) {
     return(ret)
   }
   else{
-    return(c(NA,NA))
+    ret<-list(Pvalues=NA,Pred=rep(NA,20))
   }
 }
 
