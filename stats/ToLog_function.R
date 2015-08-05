@@ -4,7 +4,7 @@
 #code heavily based on the supplementary material of
 #Ives, A. R. (2015), For testing the significance of regression coefficients, go ahead and log-transform count data. Methods in Ecology and Evolution, 6: 828–835. doi: 10.1111/2041-210X.12386
 
-
+#truc changed
 
 ###################################################################
 ### Univariate, negative binomial functions (Figs. 1 and 2A-C)
