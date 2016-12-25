@@ -24,7 +24,7 @@ a_mst<-function(traits,comm){
   #compute mst for each sample
   mst<-apply(comm,1,function(x){
     trait<-traits[rownames(traits)%in%names(x)[x!=0],]
-    dis<-gowdis(trait,ord="podani")
+    dis<-gowdis(traits,ord="podani")
     mst<-spantree(dis)
   })
   #get for each sample the distance between the species
